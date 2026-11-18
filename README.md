@@ -2,14 +2,14 @@
 
 ## Detail package using project
 
-| Name                        | Note                                      |
-| --------------------------- | ----------------------------------------- |
-| FastAPI, uvicorn            | Framwork run API and run ASGI Server      |
-| pynatic-settings            | Support load setting enviroment file      |
-| sqlalchemy, psycopg2-binary | ORM and Driver connect and query database |
-| pandas, openpyxl            | File processing and reading xslx          |
-| apscheduler                 | Run background app                        |
-| locust                      | Load test                                 |
+| Name                        | Note                                                         |
+| --------------------------- | ------------------------------------------------------------ |
+| FastAPI, uvicorn            | Framwork run API and run ASGI Server                         |
+| pynatic-settings            | Support load setting enviroment file                         |
+| sqlalchemy, psycopg2-binary | ORM and Driver connect and query database                    |
+| pandas, openpyxl            | File processing and reading xslx, pandas format extract data |
+| apscheduler                 | Run background app                                           |
+| locust                      | Load test                                                    |
 
 ## Database Schema
 
