@@ -24,7 +24,7 @@ def webhook_receive_product(
         result_service = process_service.execute(items_dict)
 
         return result_service
-    except Exception as e:
+    except OSError as e:
         logger.error(f"Shutting down database \n --> {e}")
         connection.rollback()
         msg = f"{e}"
