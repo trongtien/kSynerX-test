@@ -51,7 +51,7 @@ async def import_file_receive_product(
     producr_process_service = ProductProcessService(connection=connection)
     producr_process_service.execute(
         products=dict_data_import["dict_data_import"],
-        skus=dict_data_import["list_sku"],
+        dict_check_skus=dict_data_import["list_sku"],
     )
 
     return dict_data_import
