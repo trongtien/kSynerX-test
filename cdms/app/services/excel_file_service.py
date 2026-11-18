@@ -74,7 +74,6 @@ class ExcelFileService:
             )
 
             data_frame = data_frame.dropna(subset=["sku", "name", "price"])
-            data_frame = data_frame.drop_duplicates(subset=["sku"], keep="last")
 
             data_frame["sku"] = data_frame["sku"].str.strip().str.upper()
             data_frame["name"] = data_frame["name"].str.strip().str.upper()
@@ -83,6 +82,8 @@ class ExcelFileService:
             )
 
             data_frame = data_frame.dropna(subset=["price"])
+            data_frame = data_frame.drop_duplicates(subset=["sku"], keep="last")
+
             data_frame = data_frame.reset_index(drop=True)
 
             dict_data_import = data_frame[["sku", "name", "price"]].to_dict(
