@@ -30,3 +30,6 @@ class ProductAuditLogModel(BaseSchema):
     product: Mapped[ProductModel] = relationship(
         "ProductModel", back_populates="changes"
     )
+
+    class Config:
+        from_attributes = True

@@ -14,3 +14,6 @@ class IngestionLogModel(BaseSchema):
     updated_count = Column(Integer, default=0)
     skipped_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    class Config:
+        from_attributes = True

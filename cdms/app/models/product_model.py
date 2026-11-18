@@ -28,3 +28,6 @@ class ProductModel(BaseSchema):
     changes: Mapped[list[ProductAuditLogModel]] = relationship(
         "ProductAuditLogModel", back_populates="product", cascade="all, delete-orphan"
     )
+
+    class Config:
+        from_attributes = True
