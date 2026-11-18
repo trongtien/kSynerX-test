@@ -70,3 +70,9 @@
   | total   | number |      |
   | created | number |      |
   | update  | number |      |
+
+- API export teample xlsx product
+  URL: api/excel/template-file-export
+  Method: GET
+  Content-type: application/octet-stream,
+  Response: Streaming File
