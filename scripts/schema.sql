@@ -1,0 +1,41 @@
+CREATE TABLE products (
+    sku VARCHAR(100) PRIMARY KEY,
+    parner_sku VARCHAR(100) ,
+    name VARCHAR(255) NOT NULL,
+    price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+    checksum_hash VARCHAR(64) NOT NULL,
+    is_active boolean NOT NULL,
+
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE INDEX idx_products_updated_at ON products(updated_at);
+
+
+CREATE TABLE product_audit_log (
+    id BIGINT PRIMARY KEY,
+    sku VARCHAR(100) NOT NULL,
+
+    change_type VARCHAR(20) NOT NULL CHECK (change_type IN ('CREATED', 'UPDATED', 'STOP')),
+    details JSONB,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT fk_product_sku FOREIGN KEY (sku) REFERENCES products(sku) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_product_audit_log_sku ON product_audit_log(sku);
+CREATE INDEX idx_product_audit_log_created_at ON product_audit_log(created_at);
+
+
+CREATE TABLE ingestion_logs (
+    id BIGINT PRIMARY KEY,
+    source_type VARCHAR(50) NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    total_records INTEGER DEFAULT 0 NOT NULL,
+    created_count INTEGER DEFAULT 0 NOT NULL,
+    updated_count INTEGER DEFAULT 0 NOT NULL,
+    skipped_count INTEGER DEFAULT 0 NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE INDEX idx_ingestion_logs_created_at ON ingestion_logs(created_at);
