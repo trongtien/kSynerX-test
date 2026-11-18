@@ -47,6 +47,26 @@
 | skipped_count | INTEGER     | NOT NULL, default 0         |
 | created_at    | TIMESTAMP   | NOT NUll, default timestamp |
 
-## Worflow action
+## Worflow and API prototype
 
-## API Prototype
+- API webhook
+  URL: api/webhook/products
+  Method: POST
+  Content-type: application/json
+
+  Request body: array product change
+
+  | Name  | Type               | Note |
+  | ----- | ------------------ | ---- |
+  | sku   | string (requrired) |      |
+  | name  | string (requrired) |      |
+  | price | number (requrired) |      |
+
+  Response:
+
+  | Name    | Type   | Note |
+  | ------- | ------ | ---- |
+  | status  | string |      |
+  | total   | number |      |
+  | created | number |      |
+  | update  | number |      |
