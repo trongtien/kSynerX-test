@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from app.services.excel_file_service import ExcelFileService
+from app.services.product_process_service import ProductProcessService
 from core.database import DatabaseSession
 from core.logger import logger
 from fastapi import APIRouter, File, HTTPException, UploadFile
@@ -44,4 +45,13 @@ async def import_file_receive_product(
     if not ExcelFileService.is_valid_xlsx(file_name=file.filename, content=content):
         raise HTTPException(status_code=400, detail="File invalid")
 
-    return None
+    excel_service = ExcelFileService(content=content)
+    dict_data_import = excel_service.extract_data_content_product()
+
+    producr_process_service = ProductProcessService(connection=connection)
+    producr_process_service.execute(
+        products=dict_data_import["dict_data_import"],
+        skus=dict_data_import["list_sku"],
+    )
+
+    return dict_data_import
