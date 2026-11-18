@@ -1,7 +1,10 @@
+from typing import Annotated
+
 from core.config import cdms_setting
 from core.logger import logger
+from fastapi import Depends
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 engine = create_engine(
     url=cdms_setting.DATABASE_URL,
@@ -10,7 +13,11 @@ engine = create_engine(
     max_overflow=20,
 )
 
-BaseSchema = declarative_base()
+
+class BaseSchema(DeclarativeBase):
+    pass
+
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -39,3 +46,6 @@ class DatabaseProvider:
         logger.info("Shutting down database")
         engine.dispose()
         logger.info("Database shutdown success")
+
+
+DatabaseSession = Annotated[Session, Depends(DatabaseProvider.get_database)]
