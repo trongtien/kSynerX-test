@@ -76,7 +76,7 @@ class ExcelFileService:
             data_frame = data_frame.dropna(subset=["sku", "name", "price"])
 
             data_frame["sku"] = data_frame["sku"].str.strip().str.upper()
-            data_frame["name"] = data_frame["name"].str.strip().str.upper()
+            data_frame["name"] = data_frame["name"].str.strip()
             data_frame["price"] = pd.to_numeric(
                 data_frame["price"].astype(str).str.strip(), errors="coerce"
             )
