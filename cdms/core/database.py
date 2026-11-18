@@ -11,6 +11,7 @@ engine = create_engine(
     pool_pre_ping=True,
     pool_size=10,
     max_overflow=20,
+    executemany_mode="values_plus_batch",
 )
 
 
