@@ -15,8 +15,16 @@ class ProductProcessService:
         self.updated_count = 0
         self.skip_count = 0
 
-    def execute(self, products: list[dict]) -> None:
-        dict_sku_product = self._get_dict_product_with_sku(products)
+    def execute(
+        self,
+        products: list[dict],
+        dict_check_skus: list[str] | None = None,
+    ) -> None:
+        if dict_check_skus is None:
+            sku_for_products = [item["sku"] for item in products]
+            dict_check_skus = list(set(sku_for_products))
+
+        dict_sku_product = self._get_dict_product_with_sku(dict_check_skus)
 
         for item in products:
             sku: str = item["sku"]
@@ -42,10 +50,7 @@ class ProductProcessService:
 
         self.connection.commit()
 
-    def _get_dict_product_with_sku(
-        self, products: list[dict]
-    ) -> dict[str, ProductModel]:
-        skus = {item["sku"] for item in products}
+    def _get_dict_product_with_sku(self, skus: list[str]) -> dict[str, ProductModel]:
         existing: dict[str, ProductModel] = {
             product.sku: product
             for product in self.connection.query(ProductModel).filter(
