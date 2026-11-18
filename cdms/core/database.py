@@ -10,7 +10,7 @@ engine = create_engine(
     max_overflow=20,
 )
 
-Base = declarative_base()
+BaseSchema = declarative_base()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
