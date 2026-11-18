@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
 from app.api.health_check import root_router
+from app.api.product_import_excel import product_import_excel_router
+from app.api.product_web_hook import product_web_hook_router
 from core.config import cdms_setting
 from core.database import DatabaseProvider
 from fastapi import FastAPI
@@ -20,3 +22,5 @@ cdms_app_main = FastAPI(
 )
 
 cdms_app_main.include_router(router=root_router)
+cdms_app_main.include_router(router=product_web_hook_router)
+cdms_app_main.include_router(router=product_import_excel_router)

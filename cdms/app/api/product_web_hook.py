@@ -1,8 +1,10 @@
 from app.requests.webhook_product_request import WebHookProductRequest
+from app.services.product_process_service import ProductProcessService
 from core.database import DatabaseSession
+from core.logger import logger
 from fastapi import APIRouter, HTTPException
 
-product_web_hook_router = APIRouter(prefix="/webhook", tags=["Product webhook"])
+product_web_hook_router = APIRouter(prefix="/webhook", tags=["Product"])
 
 
 @product_web_hook_router.post(
@@ -15,8 +17,15 @@ def webhook_receive_product(
     try:
         items_dict = [item.model_dump() for item in body]
 
-        return {}
+        logger.info("Body request")
+        logger.info(f"--> {items_dict}")
+
+        process_service = ProductProcessService(connection=connection)
+        result_service = process_service.execute(items_dict)
+
+        return result_service
     except Exception as e:
+        logger.error(f"Shutting down database \n --> {e}")
         connection.rollback()
         msg = f"{e}"
         raise HTTPException(

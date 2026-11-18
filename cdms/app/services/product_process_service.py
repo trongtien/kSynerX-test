@@ -4,6 +4,7 @@ from decimal import Decimal
 from app.enums.change_type_enum import ChangeTypeEnum
 from app.models.product_audit_log_model import ProductAuditLogModel
 from app.models.product_model import ProductModel
+from core.logger import logger
 from sqlalchemy.orm import Session
 
 
@@ -23,7 +24,10 @@ class ProductProcessService:
             price = Decimal(str(item["price"]))
 
             new_hash = self._hashing_check(sku=sku, name=name, price=price)
+            logger.info(f"Product hashing check {new_hash}")
             product = dict_sku_product.get(sku)
+
+            logger.info(f"Product check exist {products is None}")
 
             if product is None:
                 dict_sku_product[sku] = self._create_product(
@@ -35,6 +39,8 @@ class ProductProcessService:
                 )
             else:
                 self.skip_count += 1
+
+        self.connection.commit()
 
     def _get_dict_product_with_sku(
         self, products: list[dict]
@@ -50,12 +56,13 @@ class ProductProcessService:
         return existing
 
     def _hashing_check(self, sku: str, name: str, price: Decimal) -> str:
-        raw_data = f"{sku}|{name}|{price:.2f}"
-        return hashlib.sha256(raw_data.encode("utf-8")).hexdigest()
+        raw_data_string = f"{sku}|{name}|{price:.2f}"
+        return hashlib.sha256(raw_data_string.encode("utf-8")).hexdigest()
 
     def _create_product(
         self, new_hash: str, sku: str, name: str, price: Decimal
     ) -> ProductModel:
+        logger.info("Run create product")
         product = ProductModel(
             sku=sku,
             name=name,
@@ -64,7 +71,7 @@ class ProductProcessService:
         )
         product.changes.append(
             ProductAuditLogModel(
-                change_type=ChangeTypeEnum.CREATED,
+                change_type=ChangeTypeEnum.CREATED.value,
                 details={"name": name, "price": f"{price:.2f}"},
             )
         )
@@ -86,6 +93,8 @@ class ProductProcessService:
         product.price = price
         product.checksum_hash = new_hash
         product.changes.append(
-            ProductAuditLogModel(change_type=ChangeTypeEnum.UPDATED, details=details)
+            ProductAuditLogModel(
+                change_type=ChangeTypeEnum.UPDATED.value, details=details
+            )
         )
         self.updated_count += 1

@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class ChangeTypeEnum(Enum):
+class ChangeTypeEnum(StrEnum):
     CREATED = "CREATED"
     UPDATED = "UPDATED"
