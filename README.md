@@ -1,8 +1,19 @@
-- KSynerx Test
+# KSynerx Test
 
-- Database Schema
+## Detail package using project
 
-** Table Products
+| Name                        | Note                                      |
+| --------------------------- | ----------------------------------------- |
+| FastAPI, uvicorn            | Framwork run API and run ASGI Server      |
+| pynatic-settings            | Support load setting enviroment file      |
+| sqlalchemy, psycopg2-binary | ORM and Driver connect and query database |
+| pandas, openpyxl            | File processing and reading xslx          |
+| apscheduler                 | Run background app                        |
+| locust                      | Load test                                 |
+
+## Database Schema
+
+- Table Products
 
 | Name          | Type          | Note                        |
 | ------------- | ------------- | --------------------------- |
@@ -14,7 +25,7 @@
 | is_active     | boolean       | NOT NUll                    |
 | updated_at    | TIMESTAMP(64) | NOT NUll, default timestamp |
 
-** Table Product audit log
+- Table Product audit log
 
 | Name        | Type         | Note                                       |
 | ----------- | ------------ | ------------------------------------------ |
@@ -24,7 +35,7 @@
 | details     | JSONB        |                                            |
 | created_at  | TIMESTAMP    | NOT NUll, default timestamp                |
 
-** Table Ingestion log
+- Table Ingestion log
 
 | Name          | Type        | Note                        |
 | ------------- | ----------- | --------------------------- |
@@ -35,3 +46,7 @@
 | created_count | INTEGER     | NOT NULL, default 0         |
 | skipped_count | INTEGER     | NOT NULL, default 0         |
 | created_at    | TIMESTAMP   | NOT NUll, default timestamp |
+
+## Worflow action
+
+## API Prototype
