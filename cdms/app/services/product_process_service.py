@@ -29,6 +29,8 @@ class ProductProcessService:
         raw_udpate: list[dict] = []
         audit_rows: list[dict] = []
 
+        skip_count: int = 0
+
         for item in products:
             sku: str = item["sku"]
             name: str = item["name"]
@@ -88,7 +90,7 @@ class ProductProcessService:
                     }
                 )
             else:
-                self.skip_count += 1
+                skip_count += 1
 
         if raw_insert:
             self.connection.execute(insert(ProductModel), raw_insert)
