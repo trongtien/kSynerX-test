@@ -40,3 +40,17 @@ class ProductAuditLogModel(BaseSchema):
     ingestion: Mapped[IngestionLogModel | None] = relationship(
         back_populates="audit_logs"
     )
+
+    def model_dums(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "sku": self.sku,
+            "change_type": self.change_type,
+            "source_type": self.source_type,
+            "ingestion_id": self.ingestion_id,
+            "event_key": self.event_key,
+            "checksum_hash": self.checksum_hash,
+            "details": self.details,
+            "source_updated_at": self.source_updated_at,
+            "created_at": self.created_at,
+        }

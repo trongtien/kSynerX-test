@@ -1,103 +1,98 @@
-import hashlib
-from datetime import UTC, datetime
-from decimal import Decimal
+from typing import Any
 
+from app.enums import source_type_enum
 from app.enums.change_type_enum import ChangeTypeEnum
-from app.models.product_audit_log_model import ProductAuditLogModel
+from app.enums.source_type_enum import SourceTypeEnum
+from app.models import IngestionLogModel, ProductAuditLogModel
 from app.models.product_model import ProductModel
-from core.logger import logger
+from app.services.excel_file_service import ProductBuilder
+from app.services.product_hash_service import ProductHashService
 from sqlalchemy import insert, update
 from sqlalchemy.orm import Session
 
 
 class ProductProcessService:
-    def __init__(self, connection: Session) -> None:
+    def __init__(self, connection: Session, product_hash_service: ProductHashService):
         self.connection = connection
+        self.product_hash_service = product_hash_service
 
     def execute(
         self,
-        products: list[dict],
+        products: list[ProductBuilder],
+        source_type: SourceTypeEnum,
         dict_check_skus: list[str] | None = None,
     ) -> None:
+        total_records = len(products)
+
         if dict_check_skus is None:
-            sku_for_products = [item["sku"] for item in products]
+            sku_for_products = [item.sku for item in products]
             dict_check_skus = list(set(sku_for_products))
 
-        dict_sku_product = self._get_dict_product_with_sku(dict_check_skus)
-        now = datetime.now(UTC)
-        raw_insert: list[dict] = []
-        raw_udpate: list[dict] = []
-        audit_rows: list[dict] = []
+        ingestion_log = IngestionLogModel(
+            source_type=source_type,
+            status="RUNING",
+            total_records=total_records,
+        )
 
-        skip_count: int = 0
+        self.connection.add(ingestion_log)
+        self.connection.flush()
+
+        dict_sku_product = self._get_dict_product_with_sku(dict_check_skus)
+
+        raw_insert: list[dict[str, Any]] = []
+        raw_udpate: list[dict[str, Any]] = []
+
+        raw_product_audit: list[dict] = []
 
         for item in products:
-            sku: str = item["sku"]
-            name: str = item["name"]
-            price = Decimal(str(item["price"]))
-
-            new_hash = self._hashing_check(sku=sku, name=name, price=price)
-            logger.info(f"Product hashing check {new_hash}")
-            product = dict_sku_product.get(sku)
-
-            logger.info(f"Product check exist {products is None}")
-
+            product = dict_sku_product.get(item.sku)
+            new_hash = self.product_hash_service.hash_dict(item.snap_dumps())
+            product_audit = ProductAuditLogModel(
+                sku=item.sku,
+                source_type=source_type,
+                ingestion_id=ingestion_log.id,
+                event_key=source_type_enum,
+                checksum_hash=new_hash,
+                source_updated_at=item.source_updated_at,
+            )
             if product is None:
                 raw_insert.append(
-                    {
-                        "sku": sku,
-                        "name": name,
-                        "price": price,
-                        "checksum_hash": new_hash,
-                    }
+                    self._to_raw_model_product(item, new_hash, source_type)
                 )
 
-                audit_rows.append(
-                    {
-                        "sku": sku,
-                        "change_type": ChangeTypeEnum.CREATED.value,
-                        "details": {"name": name, "price": f"{price:.2f}"},
-                        "created_at": now,
-                    }
-                )
-
-            elif product.checksum_hash != new_hash:
+                product_audit.change_type = ChangeTypeEnum.CREATED
+                product_audit.details = item.snap_dumps()
+                raw_product_audit.append(product_audit.model_dums())
+            elif (
+                product.checksum_hash != new_hash
+                and item.source_updated_at > product.source_updated_at
+            ):
                 raw_udpate.append(
-                    {
-                        "sku": sku,
-                        "name": name,
-                        "price": price,
-                        "checksum_hash": new_hash,
-                        "updated_at": now,
-                    }
+                    self._to_raw_model_product(item, new_hash, source_type)
                 )
 
-                audit_raw_detail: dict[str, dict[str, str]] = {}
-                if product.name != name:
-                    audit_raw_detail["name"] = {"old": product.name, "new": name}
-                if Decimal(product.price) != price:
-                    audit_raw_detail["price"] = {
-                        "old": f"{product.price:.2f}",
-                        "new": f"{price:.2f}",
-                    }
-
-                audit_rows.append(
-                    {
-                        "sku": sku,
-                        "change_type": ChangeTypeEnum.CREATED.value,
-                        "details": audit_raw_detail,
-                        "created_at": now,
-                    }
-                )
+                product_audit.change_type = ChangeTypeEnum.UPDATED
+                product_audit.details = item.comapare_old(product.snap_dumps())
+                raw_product_audit.append(product_audit.model_dums())
             else:
-                skip_count += 1
+                continue
 
-        if raw_insert:
+        total_created = len(raw_insert)
+        total_update = len(raw_udpate)
+        total_raw_product_audit = len(raw_product_audit)
+        total_skip = total_records - total_created - total_update
+
+        ingestion_log.created_count = total_created
+        ingestion_log.updated_count = total_update
+        ingestion_log.skipped_count = total_skip
+        ingestion_log.status = "SUCCESS"
+
+        if total_created:
             self.connection.execute(insert(ProductModel), raw_insert)
-        if raw_udpate:
+        if total_update:
             self.connection.execute(update(ProductModel), raw_udpate)
-        if audit_rows:
-            self.connection.execute(insert(ProductAuditLogModel), audit_rows)
+        if total_raw_product_audit > 0:
+            self.connection.execute(insert(ProductAuditLogModel), raw_product_audit)
 
         self.connection.commit()
 
@@ -111,6 +106,37 @@ class ProductProcessService:
 
         return existing
 
-    def _hashing_check(self, sku: str, name: str, price: Decimal) -> str:
-        raw_data_string = f"{sku}|{name}|{price:.2f}"
-        return hashlib.sha256(raw_data_string.encode("utf-8")).hexdigest()
+    def _get_dict_product_with_sku(self, skus: list[str]) -> dict[str, ProductModel]:
+        existing: dict[str, ProductModel] = {
+            product.sku: product
+            for product in self.connection.query(ProductModel).filter(
+                ProductModel.sku.in_(skus)
+            )
+        }
+
+        return existing
+
+    def _to_raw_model_product(
+        self, b: ProductBuilder, checksum_hash: str, source_type: SourceTypeEnum
+    ) -> dict[str, Any]:
+        return {
+            "sku": b.sku,
+            "product_id": b.product_id,
+            "partner_sku": b.partner_sku,
+            "product_name": b.product_name,
+            "asset_type": b.asset_type,
+            "color": b.color,
+            "size": b.size,
+            "description": b.description,
+            "is_active": b.is_active,
+            "has_serial": b.has_serial,
+            "has_expiration": b.has_expiration,
+            "units": list(b.units),
+            "categories": [
+                {"categoryCode": c.category_code, "categoryName": c.category_name}
+                for c in b.categories
+            ],
+            "checksum_hash": checksum_hash,
+            "source_updated_at": b.source_updated_at,
+            "last_source": source_type,
+        }

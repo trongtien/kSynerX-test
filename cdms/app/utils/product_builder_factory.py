@@ -43,10 +43,8 @@ class ProductBuilder(FormatString):
         object.__setattr__(self, "units", units)
         object.__setattr__(self, "categories", categories)
 
-    @staticmethod
-    def comapare_old(
-        old_change: dict[str, Any], next_change: dict[str, Any]
-    ) -> dict[str, dict[str, Any]]:
+    def comapare_old(self, old_change: dict[str, Any]) -> dict[str, dict[str, Any]]:
+        next_change = self.snap_dumps()
         changes = {}
 
         for field, new_value in next_change.items():

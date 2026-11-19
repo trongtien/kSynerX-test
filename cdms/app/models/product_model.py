@@ -71,9 +71,10 @@ class ProductModel(BaseSchema):
         back_populates="product", passive_deletes="all"
     )
 
-    def snap_dict(self) -> dict[str, Any]:
+    def snap_dumps(self) -> dict[str, Any]:
         return {
             "sku": self.sku,
+            "product_id": self.product_id,
             "partner_sku": self.partner_sku,
             "product_name": self.product_name,
             "asset_type": self.asset_type,
