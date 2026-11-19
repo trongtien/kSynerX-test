@@ -1,7 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class WebHookProductRequest(BaseModel):
     sku: str
     name: str
-    price: float = Field(ge=0, description="Price product >= 0")

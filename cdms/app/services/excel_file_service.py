@@ -26,8 +26,15 @@ class ExcelFileService:
         teamplate = pd.DataFrame(
             {
                 "sku": ["ABC001"],
-                "name": ["Sản phẩm A"],
-                "price": [123500],
+                "partner_sku": [],
+                "product_name": ["Sản phẩm A"],
+                "asset_type": [],
+                "color": [],
+                "size": [],
+                "description": [],
+                "is_active": [],
+                "has_serial": [],
+                "units": ["PCS,BOX"],
             }
         )
 
@@ -73,22 +80,30 @@ class ExcelFileService:
                 data_frame.columns.str.strip().str.lower().str.replace(" ", "_")
             )
 
-            data_frame = data_frame.dropna(subset=["sku", "name", "price"])
+            data_frame = data_frame.dropna(subset=["sku", "product_name"])
 
             data_frame["sku"] = data_frame["sku"].str.strip().str.upper()
-            data_frame["name"] = data_frame["name"].str.strip()
-            data_frame["price"] = pd.to_numeric(
-                data_frame["price"].astype(str).str.strip(), errors="coerce"
-            )
+            data_frame["product_name"] = data_frame["product_name"].str.strip()
 
             data_frame = data_frame.dropna(subset=["price"])
             data_frame = data_frame.drop_duplicates(subset=["sku"], keep="last")
 
             data_frame = data_frame.reset_index(drop=True)
 
-            dict_data_import = data_frame[["sku", "name", "price"]].to_dict(
-                orient="records"
-            )
+            dict_data_import = data_frame[
+                [
+                    "sku",
+                    "partner_sku",
+                    "product_name",
+                    "asset_type",
+                    "color",
+                    "size",
+                    "description",
+                    "is_active",
+                    "has_serial",
+                    "units",
+                ]
+            ].to_dict(orient="records")
 
             list_sku = data_frame["sku"].tolist()
             return {"list_sku": list_sku, "dict_data_import": dict_data_import}

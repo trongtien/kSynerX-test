@@ -2,23 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from app.utils.category_builder import CategoryItemBuilder
 from app.utils.format_str import FormatString
-
-
-@dataclass(frozen=True, slots=True)
-class CategoryItem(FormatString):
-    category_code: str
-    category_name: str | None = None
-
-    def __post_init__(self) -> None:
-        code = self.tranform_text(self.category_code)
-        if code is None:
-            raise ValueError("categoryCode must not be empty")
-
-        name = self.tranform_text(self.category_name)
-
-        object.__setattr__(self, "category_code", code)
-        object.__setattr__(self, "category_name", name)
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,7 +21,7 @@ class ProductBuilder(FormatString):
     has_serial: bool = False
     has_expiration: bool = False
     units: tuple[str, ...] = ()
-    categories: tuple[CategoryItem, ...] = ()
+    categories: tuple[CategoryItemBuilder, ...] = ()
 
     def __post_init__(self) -> None:
         sku = self.tranform_text(self.sku)
@@ -106,9 +91,9 @@ class ProductBuilder(FormatString):
         return tuple(sorted(cleaned_units))
 
     def _tranform_format_category(
-        self, value: tuple[CategoryItem, ...]
-    ) -> tuple[CategoryItem, ...]:
-        unique_categories: dict[str, CategoryItem] = {}
+        self, value: tuple[CategoryItemBuilder, ...]
+    ) -> tuple[CategoryItemBuilder, ...]:
+        unique_categories: dict[str, CategoryItemBuilder] = {}
 
         for category in value:
             unique_categories[category.category_code] = category
