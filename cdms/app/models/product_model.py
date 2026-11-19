@@ -70,3 +70,19 @@ class ProductModel(BaseSchema):
     audit_logs: Mapped[list[ProductAuditLogModel]] = relationship(
         back_populates="product", passive_deletes="all"
     )
+
+    def snap_dict(self) -> dict[str, Any]:
+        return {
+            "sku": self.sku,
+            "partner_sku": self.partner_sku,
+            "product_name": self.product_name,
+            "asset_type": self.asset_type,
+            "color": self.color,
+            "size": self.size,
+            "description": self.description,
+            "is_active": self.is_active,
+            "has_serial": self.has_serial,
+            "has_expiration": self.has_expiration,
+            "units": list(self.units or []),
+            "categories": list(self.categories or []),
+        }
