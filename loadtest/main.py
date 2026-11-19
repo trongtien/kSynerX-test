@@ -1,22 +1,23 @@
-import logging
+import os
+import sys
+from pathlib import Path
 
-from loadtest.product import ProductFaker
-from loadtest.sent_webhook import SentWebhook
-from loadtest.setting import load_setting
+import uvicorn
+from core.config import cdms_setting
+
+ROOT_DIR = Path(__file__).resolve().parent
+CDMS_DIR = ROOT_DIR.parent / "cdms"
+sys.path.insert(0, str(CDMS_DIR))
 
 
-def main() -> None:
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
+def start() -> None:
+    uvicorn.run(
+        "server_test:app",
+        host=cdms_setting.SERVICE_TEST_HOST,
+        port=int(cdms_setting.SERVICE_TEST_PORT),
+        app_dir=str(ROOT_DIR),
     )
-    setting = load_setting()
-    products = ProductFaker(setting.seed)
-    webhook = SentWebhook(setting, products)
-    try:
-        webhook.send_create(setting.initial_products)
-    finally:
-        webhook.close()
 
 
 if __name__ == "__main__":
-    main()
+    start()
