@@ -17,11 +17,6 @@ def webhook_receive_product(
     connection: DatabaseSession,
 ):
     try:
-        items_dict = body.model_dump()
-
-        logger.info("Body request")
-        logger.info(f"--> {items_dict}")
-
         products = body.mapper_product_builder(update_at=None)
 
         process_service = ProductProcessService(
