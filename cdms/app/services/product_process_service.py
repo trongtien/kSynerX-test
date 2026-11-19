@@ -1,6 +1,5 @@
 from typing import Any
 
-from app.enums import source_type_enum
 from app.enums.change_type_enum import ChangeTypeEnum
 from app.enums.source_type_enum import SourceTypeEnum
 from app.models import IngestionLogModel, ProductAuditLogModel
@@ -51,7 +50,7 @@ class ProductProcessService:
                 sku=item.sku,
                 source_type=source_type,
                 ingestion_id=ingestion_log.id,
-                event_key=source_type_enum,
+                event_key=source_type,
                 checksum_hash=new_hash,
                 source_updated_at=item.source_updated_at,
             )
@@ -95,16 +94,6 @@ class ProductProcessService:
             self.connection.execute(insert(ProductAuditLogModel), raw_product_audit)
 
         self.connection.commit()
-
-    def _get_dict_product_with_sku(self, skus: list[str]) -> dict[str, ProductModel]:
-        existing: dict[str, ProductModel] = {
-            product.sku: product
-            for product in self.connection.query(ProductModel).filter(
-                ProductModel.sku.in_(skus)
-            )
-        }
-
-        return existing
 
     def _get_dict_product_with_sku(self, skus: list[str]) -> dict[str, ProductModel]:
         existing: dict[str, ProductModel] = {

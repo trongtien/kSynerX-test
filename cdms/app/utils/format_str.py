@@ -9,7 +9,7 @@ class FormatString:
         return value or None
 
     @staticmethod
-    def split_string_tuple(value: str) -> tuple[str, ...]:
+    def split_string_tuple(value: str | None) -> tuple[str, ...]:
         if value is None:
             return ()
 

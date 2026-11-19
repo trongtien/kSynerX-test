@@ -29,4 +29,4 @@ class CDMSSetting(BaseSettings):
         return f"postgresql+psycopg2://{self.DATABASE_DB_USERNAME}:{self.DATABASE_DB_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_DB_NAME}"
 
 
-cdms_setting = CDMSSetting()
+cdms_setting = CDMSSetting()  # pyright: ignore[reportCallIssue]  # fields loaded from env/.env

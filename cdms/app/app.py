@@ -9,7 +9,7 @@ from fastapi import FastAPI
 
 
 @asynccontextmanager
-async def lifespan_database(app: FastAPI):
+async def lifespan_database(app: FastAPI):  # pyright: ignore[reportUnusedParameter]
     DatabaseProvider.check_database_connection()
     yield
     DatabaseProvider.shutdown_database()
