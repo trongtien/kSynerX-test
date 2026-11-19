@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import Any
 
 from app.utils.format_str import FormatString
 
@@ -17,3 +20,15 @@ class CategoryItemBuilder(FormatString):
 
         object.__setattr__(self, "category_code", code)
         object.__setattr__(self, "category_name", name)
+
+    @classmethod
+    def tranform_with_string(cls, value: Any) -> tuple[CategoryItemBuilder, ...]:
+        if value is None:
+            return ()
+        items: list[CategoryItemBuilder] = []
+        for chunk in str(value).split(";"):
+            if not chunk.strip():
+                continue
+            code, _, name = chunk.partition(":")
+            items.append(cls(category_code=code, category_name=name))
+        return tuple(items)
