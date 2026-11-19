@@ -1,6 +1,9 @@
+from datetime import UTC, datetime
 from typing import Annotated
 
+from app.enums.source_type_enum import SourceTypeEnum
 from app.services.excel_file_service import ExcelFileService
+from app.services.product_hash_service import ProductHashService
 from app.services.product_process_service import ProductProcessService
 from core.database import DatabaseSession
 from core.logger import logger
@@ -46,12 +49,17 @@ async def import_file_receive_product(
         raise HTTPException(status_code=400, detail="File invalid")
 
     excel_service = ExcelFileService(content=content)
-    dict_data_import = excel_service.extract_data_content_product()
+    dict_data_import = excel_service.extract_data_content_product(
+        update_at=datetime.now(UTC)
+    )
 
-    producr_process_service = ProductProcessService(connection=connection)
+    producr_process_service = ProductProcessService(
+        connection=connection, product_hash_service=ProductHashService()
+    )
     producr_process_service.execute(
-        products=dict_data_import["dict_data_import"],
-        dict_check_skus=dict_data_import["list_sku"],
+        products=dict_data_import.products,
+        source_type=SourceTypeEnum.EXCEL,
+        dict_check_skus=dict_data_import.list_sku,
     )
 
     return dict_data_import

@@ -1,4 +1,6 @@
+from app.enums.source_type_enum import SourceTypeEnum
 from app.requests.webhook_product_request import WebHookProductRequest
+from app.services.product_hash_service import ProductHashService
 from app.services.product_process_service import ProductProcessService
 from core.database import DatabaseSession
 from core.logger import logger
@@ -11,17 +13,24 @@ product_web_hook_router = APIRouter(prefix="/webhook", tags=["Product"])
     "/products", summary="Receive Real-time Product Changes via Webhook"
 )
 def webhook_receive_product(
-    body: list[WebHookProductRequest],
+    body: WebHookProductRequest,
     connection: DatabaseSession,
 ):
     try:
-        items_dict = [item.model_dump() for item in body]
+        items_dict = body.model_dump()
 
         logger.info("Body request")
         logger.info(f"--> {items_dict}")
 
-        process_service = ProductProcessService(connection=connection)
-        result_service = process_service.execute(items_dict)
+        products = body.mapper_product_builder(update_at=None)
+
+        process_service = ProductProcessService(
+            connection=connection, product_hash_service=ProductHashService()
+        )
+        result_service = process_service.execute(
+            products=products,
+            source_type=SourceTypeEnum.WEBHOOK,
+        )
 
         return result_service
     except OSError as e:
