@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from app.enums.source_type_enum import SourceTypeEnum
-from app.models.product_audit_log_model import ProductAuditLogModel
 from app.models.sql_alschemy_type import pg_enum
 from core.database import BaseSchema
 from sqlalchemy import BigInteger, DateTime, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from app.models.product_audit_log_model import ProductAuditLogModel
 
 
 class IngestionLogModel(BaseSchema):

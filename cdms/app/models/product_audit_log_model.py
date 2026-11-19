@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from app.enums.change_type_enum import ChangeTypeEnum
 from app.enums.source_type_enum import SourceTypeEnum
-from app.models.ingestion_log_model import IngestionLogModel
-from app.models.product_model import ProductModel
 from app.models.sql_alschemy_type import pg_enum
 from core.database import BaseSchema
 from sqlalchemy import CHAR, BigInteger, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from app.models.ingestion_log_model import IngestionLogModel
+    from app.models.product_model import ProductModel
 
 
 class ProductAuditLogModel(BaseSchema):
