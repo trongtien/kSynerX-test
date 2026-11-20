@@ -3,6 +3,7 @@ import contextlib
 
 from app.services.product_pull_service import ProductPullService
 from core.logger import logger
+from sqlalchemy.exc import SQLAlchemyError
 
 
 class ProductPullScheduler:
@@ -42,5 +43,5 @@ class ProductPullScheduler:
         try:
             summary = await asyncio.to_thread(self.pull_service.run_pull_product)
             logger.info(f"Pull product done -> {summary}")
-        except OSError as e:
+        except OSError or SQLAlchemyErrorm as e:
             logger.error(f"Pull product failed \n --> {e}")

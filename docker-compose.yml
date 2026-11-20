@@ -19,5 +19,23 @@ services:
       timeout: 5s
       retries: 5
 
+  loadtest:
+    build: { context: ., dockerfile: loadtest/Dockerfile }
+    environment: { INITIAL_PRODUCTS: 250 }
+    ports: ["4000:4000"]
+    env_file:
+      - .env.example
+    restart: unless-stopped
+
+  cdms:
+    build: { context: ., dockerfile: cdms/Dockerfile }
+    ports: ["3000:3000"]
+    env_file:
+      - .env.example
+    depends_on:
+      db: { condition: service_healthy }
+      loadtest: { condition: service_healthy }
+    restart: unless-stopped
+
 volumes:
   postgres_data:
