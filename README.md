@@ -45,6 +45,12 @@
 | PULL_PRODUCT_PAGE_SIZE        | 100                | Size page fetch Product    |
 | PULL_PRODUCT_MAX_PAGE         | 1000               | Page max fetch product     |
 
+## Diagrams
+
+- Logic
+
+![Logic diagram](images/Logic.drawio.png)
+
 ## Worflow and API prototype
 
 - API Headlh check
