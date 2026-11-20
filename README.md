@@ -158,3 +158,4 @@ File script: `scripts/schema.sql`
   - Retry connect database failed
   - Spike testing and concurrency testing
   - Detection of deleted products
+  - Insert bulk chulk
