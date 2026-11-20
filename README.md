@@ -20,9 +20,13 @@
 | Name                        | Note                                                         |
 | --------------------------- | ------------------------------------------------------------ |
 | FastAPI, uvicorn            | Framwork run API and run ASGI Server                         |
-| pynatic-settings            | Support load setting enviroment file                         |
+| pydantic                    | Validate request body and define data schema                 |
+| pydantic-settings           | Support load setting enviroment file                         |
+| python-dotenv               | Read file .env (used by pydantic-settings env_file)          |
+| python-multipart            | Parse multipart/form-data upload file excel (UploadFile)     |
 | sqlalchemy, psycopg2-binary | ORM and Driver connect and query database                    |
 | pandas, openpyxl            | File processing and reading xslx, pandas format extract data |
+| httpx                       | HTTP client cdms call service loadtest pull data product     |
 | faker                       | Generator data testing                                       |
 
 ## Configuaration
@@ -71,54 +75,75 @@
   Method: POST
   Content-type: application/octet-stream, miltipart
 
+## Database Schema
+
+File script: `scripts/schema.sql`
+
+- Enum
+
+| Name                       | Value                           |
+| -------------------------- | ------------------------------- |
+| product_last_source_enum   | 'POLLING', 'WEBHOOK', 'EXCEL'   |
+| source_type_enum           | 'WEBHOOK', 'EXCEL', 'POLLING'   |
+| audit_log_change_type_enum | 'CREATED', 'UPDATED'            |
+
+- Table products
+
+| Name              | Type                     | Note                                    |
+| ----------------- | ------------------------ | --------------------------------------- |
+| sku               | VARCHAR(100)             | Primary                                 |
+| product_id        | INTEGER                  |                                         |
+| partner_sku       | VARCHAR(100)             | Index idx_products_partner_sku          |
+| product_name      | VARCHAR(255)             | NOT NULL                                |
+| asset_type        | VARCHAR(30)              |                                         |
+| color             | VARCHAR(100)             |                                         |
+| size              | VARCHAR(100)             |                                         |
+| description       | TEXT                     |                                         |
+| has_serial        | BOOLEAN                  | NOT NULL, default FALSE                 |
+| has_expiration    | BOOLEAN                  | NOT NULL, default FALSE                 |
+| is_active         | BOOLEAN                  | NOT NULL, default TRUE                  |
+| units             | JSONB                    | NOT NULL, default []                    |
+| categories        | JSONB                    | NOT NULL, default []                    |
+| checksum_hash     | CHAR(64)                 | NOT NULL, hash data product detect change |
+| source_updated_at | TIMESTAMPTZ              | NOT NULL, time updated from source      |
+| last_source       | product_last_source_enum | NOT NULL                                |
+| created_at        | TIMESTAMPTZ              | NOT NULL, default now()                 |
+| updated_at        | TIMESTAMPTZ              | NOT NULL, default now(), Index idx_products_updated_at |
+
+- Table product_audit_log
+
+| Name              | Type                       | Note                                        |
+| ----------------- | -------------------------- | ------------------------------------------- |
+| id                | BIGINT                     | Primary, identity                           |
+| sku               | VARCHAR(100)               | NOT NULL, FK products(sku) ON DELETE RESTRICT |
+| change_type       | audit_log_change_type_enum | NOT NULL                                    |
+| source_type       | source_type_enum           | NOT NULL                                    |
+| ingestion_id      | BIGINT                     | FK ingestion_logs(id), Index idx_audit_ingestion_id |
+| event_key         | VARCHAR(255)               |                                             |
+| checksum_hash     | CHAR(64)                   | NOT NULL                                    |
+| details           | JSONB                      |                                             |
+| source_updated_at | TIMESTAMPTZ                | NOT NULL                                    |
+| created_at        | TIMESTAMPTZ                | NOT NULL, default now()                     |
+
+  - Index idx_audit_sku_created_at: (sku, created_at)
+  - Unique index uq_audit_one_created_per_sku: (sku) WHERE change_type = 'CREATED' -> each sku only one log CREATED
+
+- Table ingestion_logs
+
+| Name          | Type             | Note                                        |
+| ------------- | ---------------- | ------------------------------------------- |
+| id            | BIGINT           | Primary, identity                           |
+| source_type   | source_type_enum | NOT NULL                                    |
+| status        | VARCHAR(30)      | NOT NULL                                    |
+| total_records | INTEGER          | NOT NULL, default 0                         |
+| created_count | INTEGER          | NOT NULL, default 0                         |
+| updated_count | INTEGER          | NOT NULL, default 0                         |
+| skipped_count | INTEGER          | NOT NULL, default 0                         |
+| created_at    | TIMESTAMPTZ      | NOT NULL, default now(), Index idx_ingestion_logs_created_at |
+
 ## Work done and not done
 
 ### Done
 
 - Api webhook input data
 - Api import excel and export template excel data product
-
-## Database Schema
-
-- Table Products
-
-| Name           | Type                                 | Note                        |
-| -------------- | ------------------------------------ | --------------------------- |
-| sku            | VARCHAR(100)                         | Primary                     |
-| parner_sku     | VARCHAR(100)                         |                             |
-| product_name   | VARCHAR(255)                         | NOT NUll                    |
-| product_name   | VARCHAR(255)                         | NOT NUll                    |
-| asset_type     | VARCHAR(30)                          |                             |
-| color          | VARCHAR(100)                         |                             |
-| color          | VARCHAR(100)                         |                             |
-| description    | TEXT                                 |                             |
-| has_serial     | BOOLEAN                              |                             |
-| has_expiration | BOOLEAN                              |                             |
-| is_active      | boolean                              | NOT NUll, default True      |
-| units          | JSONB                                | NOT NUll, default []        |
-| categories     | JSONB                                | NOT NUll, default []        |
-| last_source    | enum ('POLLING', 'WEBHOOK', 'EXCEL') | NOT NULL                    |
-| created_at     | TIMESTAMP(64)                        | NOT NUll, default timestamp |
-| updated_at     | TIMESTAMP(64)                        | NOT NUll, default timestamp |
-
-- Table Product audit log
-
-| Name        | Type                                  | Note                        |
-| ----------- | ------------------------------------- | --------------------------- |
-| id          | BIGINT                                | Primary                     |
-| sku         | VARCHAR(100)                          | NOT NUll                    |
-| change_type | enum('CREATED', 'UPDATED', 'SKIPPED') | NOT NUll                    |
-| details     | JSONB                                 |                             |
-| created_at  | TIMESTAMP                             | NOT NUll, default timestamp |
-
-- Table Ingestion log
-
-| Name          | Type                 | Note                        |
-| ------------- | -------------------- | --------------------------- |
-| id            | BIGINT               | Primary                     |
-| source_type   | VARCHAR(50)          | NOT NUll                    |
-| status        | enum(WEBHOOK, EXCEL) | NOT NUll                    |
-| total_records | INTEGER              | NOT NULL, default 0         |
-| created_count | INTEGER              | NOT NULL, default 0         |
-| skipped_count | INTEGER              | NOT NULL, default 0         |
-| created_at    | TIMESTAMP            | NOT NUll, default timestamp |
