@@ -15,6 +15,16 @@
   - cdms: python cdms/main.py
   - loadtes: loadtest/main.py
 
+## Detail package using project
+
+| Name                        | Note                                                         |
+| --------------------------- | ------------------------------------------------------------ |
+| FastAPI, uvicorn            | Framwork run API and run ASGI Server                         |
+| pynatic-settings            | Support load setting enviroment file                         |
+| sqlalchemy, psycopg2-binary | ORM and Driver connect and query database                    |
+| pandas, openpyxl            | File processing and reading xslx, pandas format extract data |
+| faker                       | Generator data testing                                       |
+
 ## Configuaration
 
 | Name                          | Value              | Note                       |
@@ -31,22 +41,42 @@
 | PULL_PRODUCT_PAGE_SIZE        | 100                | Size page fetch Product    |
 | PULL_PRODUCT_MAX_PAGE         | 1000               | Page max fetch product     |
 
+## Worflow and API prototype
+
+- API Headlh check
+  URL: /
+  Method: GET
+  Content-type: application/json
+
+- API webhook insert data product
+  URL: api/webhook/products
+  Method: POST
+  Content-type: application/json
+
+  Request body: array product change
+
+  | Name     | Type            | Note |
+  | -------- | --------------- | ---- |
+  | products | ProductReqeuest |      |
+  - sku, product_name: reqired not empty
+
+- API export teample xlsx product
+  URL: api/excel/template-file-export
+  Method: GET
+  Content-type: application/octet-stream,
+  Response: Streaming File
+
+- API product import
+  URL: api/excel/product-import
+  Method: POST
+  Content-type: application/octet-stream, miltipart
+
 ## Work done and not done
 
 ### Done
 
 - Api webhook input data
 - Api import excel and export template excel data product
-
-## Detail package using project
-
-| Name                        | Note                                                         |
-| --------------------------- | ------------------------------------------------------------ |
-| FastAPI, uvicorn            | Framwork run API and run ASGI Server                         |
-| pynatic-settings            | Support load setting enviroment file                         |
-| sqlalchemy, psycopg2-binary | ORM and Driver connect and query database                    |
-| pandas, openpyxl            | File processing and reading xslx, pandas format extract data |
-| faker                       | Generator data testing                                       |
 
 ## Database Schema
 
@@ -92,32 +122,3 @@
 | created_count | INTEGER              | NOT NULL, default 0         |
 | skipped_count | INTEGER              | NOT NULL, default 0         |
 | created_at    | TIMESTAMP            | NOT NUll, default timestamp |
-
-## Worflow and API prototype
-
-- API webhook
-  URL: api/webhook/products
-  Method: POST
-  Content-type: application/json
-
-  Request body: array product change
-
-  | Name | Type               | Note |
-  | ---- | ------------------ | ---- |
-  | sku  | string (requrired) |      |
-  | name | string (requrired) |      |
-
-  Response:
-
-  | Name    | Type   | Note |
-  | ------- | ------ | ---- |
-  | status  | string |      |
-  | total   | number |      |
-  | created | number |      |
-  | update  | number |      |
-
-- API export teample xlsx product
-  URL: api/excel/template-file-export
-  Method: GET
-  Content-type: application/octet-stream,
-  Response: Streaming File
