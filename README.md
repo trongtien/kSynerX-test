@@ -1,5 +1,36 @@
 # KSynerx Test
 
+## Overide
+
+- Service cdms: api run port 3000
+- Service loadtest : api run port 4000
+
+## Run service
+
+- docker compose up --build -d
+- Swgger:
+  - cdms: http://localhost:3000/docs
+  - loadtes: http://localhost:4000/docs
+- Run local not docker: python cdms/main.py, python loadtest/main.py
+  - cdms: python cdms/main.py
+  - loadtes: loadtest/main.py
+
+## Configuaration
+
+| Name                          | Value              | Note                       |
+| ----------------------------- | ------------------ | -------------------------- |
+| SERVICE_HOST                  | locahost (default) | Item3.1                    |
+| SERVICE_PORT                  | 3000 (default)     | Item3.1                    |
+| SERVICE_TEST_HOST             | locahost (default) | Item3.1                    |
+| SERVICE_TEST_PORT             | 40000 (default)    | Item3.1                    |
+| DATABASE_HOST                 | required           | Host database postgres     |
+| DATABASE_PORT                 | required           | Port database postgres     |
+| DATABASE_DB_NAMME             | required           | Db name database postgres  |
+| DATABASE_DB_USERNAME          | required           | Usernane database postgres |
+| PULL_PRODUCT_INTERVAL_SECONDS | 300                | Time fetch data product    |
+| PULL_PRODUCT_PAGE_SIZE        | 100                | Size page fetch Product    |
+| PULL_PRODUCT_MAX_PAGE         | 1000               | Page max fetch product     |
+
 ## Work done and not done
 
 ### Done
@@ -15,8 +46,7 @@
 | pynatic-settings            | Support load setting enviroment file                         |
 | sqlalchemy, psycopg2-binary | ORM and Driver connect and query database                    |
 | pandas, openpyxl            | File processing and reading xslx, pandas format extract data |
-| apscheduler                 | Run background app                                           |
-| locust                      | Load test                                                    |
+| faker                       | Generator data testing                                       |
 
 ## Database Schema
 
