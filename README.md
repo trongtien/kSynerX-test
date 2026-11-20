@@ -11,7 +11,7 @@
 - Swgger:
   - cdms: http://localhost:3000/docs
   - loadtes: http://localhost:4000/docs
-- Run local not docker: python cdms/main.py, python loadtest/main.py
+- Run local not docker:
   - cdms: python cdms/main.py
   - loadtes: loadtest/main.py
 
